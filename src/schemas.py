@@ -19,16 +19,18 @@ schemas_logger = Logger(logger_name='schemas_logger', log_file='schemas.log').ge
     producers: Optional[int]
     start_date: Optional[str]           # Format: YYYY-MM-DD
     end_date: Optional[str]             # Format: YYYY-MM-DD
+
+    genres: Optional[list[int]] = Field(default=None)
+    rating: Optional[str] = Field(default=None)
     
 """
 
 class LookingFor(BaseModel):
     subject: str                                            # only manga or anime. Manga includes the types: Manhua, Manhwa, Light Novels, One-shot
     type: Optional[str] = Field(default=None)
-    rating: Optional[str] = Field(default=None)
-    genres: Optional[list[int]] = Field(default=None)       # genres, explicit_genres, themes, demographics | Add constrains (such as only one demographic) in the fronten
-    status: Optional[str]                                   # "airing" or "complete" or "upcoming"
-    sfw: Optional[bool] 
+    order_by: Optional[str] = Field(default=None)
+    status: Optional[str] = Field(default=None)             # "airing" or "complete" or "upcoming"
+    sfw: Optional[str] = Field(default="true")
 
     @field_validator("subject")
     @classmethod
@@ -41,6 +43,16 @@ class LookingFor(BaseModel):
             # Raises ValueError to halt request. Valid subject is required
         return value
     
+    @field_validator("order_by")
+    @classmethod
+    def validate_order_by(cls, value):
+        valid_order_by = {"mal_id", "title", "start_date", "end_date", "episodes", "score", "scored_by", "rank", "popularity", "members", "favorites"}
+        if value.lower() not in valid_order_by:
+            schemas_logger.warning(f"Order_By Validator: Rejected {value} -> {None}")
+            return None
+            # Raises ValueError to halt request. Valid subject is required
+        return value
+
 
     # Other fields that are optional does not raise ValueError
     # Only converted to <None> to exclude in parameters
@@ -61,7 +73,7 @@ class LookingFor(BaseModel):
     
     # Same for the other validators below
 
-
+    """
     @field_validator("rating")
     @classmethod
     def validate_rating(cls, value):
@@ -75,6 +87,7 @@ class LookingFor(BaseModel):
             return None
         return value
     
+    
 
     @field_validator("genres")
     @classmethod
@@ -87,6 +100,7 @@ class LookingFor(BaseModel):
             schemas_logger.warning(f"Genres Validator: Rejected {value} -> {None}")
             return None
         return value
+    """
 
     @field_validator("status")
     @classmethod

@@ -1,2 +1,6 @@
-2026-01-22 16:31:32,226 INFO HTTP client started
-2026-01-22 16:34:45,614 INFO HTTP client closed
+2026-01-26 15:13:06,475 INFO HTTP client started
+2026-01-26 15:13:06,475 INFO Redis connection started
+2026-01-26 15:13:18,225 INFO Cache hit for https://api.jikan.moe/v4/anime?status=complete&sfw=true
+2026-01-26 15:13:26,149 INFO Cache hit for https://api.jikan.moe/v4/anime?status=complete&sfw=true
+2026-01-26 15:14:23,605 INFO Redis connection closed
+2026-01-26 15:14:23,605 INFO HTTP client closed
