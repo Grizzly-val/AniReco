@@ -1,8 +1,12 @@
 from contextlib import asynccontextmanager
 import json
 from typing import TypedDict, cast
-from fastapi import FastAPI, HTTPException, Depends, Request
-from src.schemas import LookingFor
+from fastapi import FastAPI, HTTPException, Depends, Request, status
+
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
+from src.schemas import LayerOneParameters
 
 import asyncio
 import httpx
@@ -18,14 +22,10 @@ from src.dependencies import get_client, get_redis
 from urllib.parse import urlencode
 
 
-class AppState:
-    client: httpx.AsyncClient
-    redis: Redis
-
-
 # Logging for debugging
 app_logger = Logger(logger_name='app_logger', log_file='app.log').get_logger()
-
+def get_app_logger() -> Logger:
+    return app_logger
 
 
 @asynccontextmanager
@@ -44,21 +44,29 @@ async def lifespan(app: FastAPI):
     app_logger.info("HTTP client closed")
 
 
-
-
-
 # ===================================
 app = FastAPI(lifespan=lifespan)
 JIKAN_URL = "https://api.jikan.moe/v4"
 # ===================================
 
 
+@app.exception_handler(RequestValidationError)
+async def request_validation(request: Request, exc: RequestValidationError):
+    app_logger.warning(f"User sent bad data: {exc.errors()}")
+
+    return JSONResponse(
+        content = {"message": "You've entered invalid filter/s", "details": exc.errors()},
+        status_code = status.HTTP_422_UNPROCESSABLE_CONTENT
+    )
+
+# @app.exception_handler(HTTPException) Not now
 
 async def fetch_jikan(request_url: str, client: httpx.AsyncClient) -> httpx.Response:
     try:
         app_logger.info(f"Fetching Jikan | URL: {request_url}")
         response = await client.get(request_url)
         response.raise_for_status()
+
     except httpx.HTTPStatusError as httpError:
         app_logger.warning(f"Fetch failed!  | HTTPStatus: {response.status_code}")
     else:
@@ -78,11 +86,11 @@ Datas to cache:
     Proactive caching: IDK
 
     
-    -----------------------------------------------------------------------
+    --------------------------------DONE ALMOST---------------------------------------
     Layer 1:
     > Narrow down to (status, order_by, type, sfw), cache then return
-    -----------------------------------------------------------------------
-    Layer 2:
+    -------------------------------NOT DONE----------------------------------------
+    Layer 2:        
     > Narrow down by filtering constraints
     -----------------------------------------------------------------------
 
@@ -106,10 +114,10 @@ Datas to cache:
 
 
 
-async def handle_request(client: httpx.AsyncClient, redis: Redis, lf: LookingFor):
-    params = lf.model_dump(exclude_none=True, exclude={"subject"})
+async def handle_request(client: httpx.AsyncClient, redis: Redis, lf: LayerOneParameters) -> tuple[dict, httpx.Response]:
+    params = lf.model_dump(exclude_none=True, exclude={"subject"}, mode="json")
     query_string = urlencode(params)
-    request_url = f"{JIKAN_URL}/{lf.subject}?{query_string}" 
+    request_url = f"{JIKAN_URL}/{lf.subject.value}?{query_string}" 
 
 
     l1_cache = await redis.get(request_url)
@@ -136,7 +144,7 @@ async def handle_request(client: httpx.AsyncClient, redis: Redis, lf: LookingFor
         app_logger.warning(f"Caching cancelled: Unknown Error Occured: {e}")
         return data
 
-    app_logger.info(f"Caching query results: {request_url}")
+    app_logger.info(f"Caching query results")
     json_string = json.dumps(data)
     await redis.set(name=request_url, value=json_string, ex=cache_ttl)
 
@@ -153,6 +161,6 @@ async def handle_request(client: httpx.AsyncClient, redis: Redis, lf: LookingFor
 
 
 @app.post("/get_recommendation", status_code=200)
-async def get_recommendation(lf: LookingFor, client: httpx.AsyncClient = Depends(get_client), redis: Redis = Depends(get_redis)) -> dict:
+async def get_recommendation(lf: LayerOneParameters, client: httpx.AsyncClient = Depends(get_client), redis: Redis = Depends(get_redis)) -> dict:
     response = await handle_request(client, redis, lf)
     return response
