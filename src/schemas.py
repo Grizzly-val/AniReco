@@ -1,3 +1,4 @@
+from enum import Enum
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
@@ -25,13 +26,71 @@ schemas_logger = Logger(logger_name='schemas_logger', log_file='schemas.log').ge
     
 """
 
-class LookingFor(BaseModel):
-    subject: str                                            # only manga or anime. Manga includes the types: Manhua, Manhwa, Light Novels, One-shot
-    type: Optional[str] = Field(default=None)
-    order_by: Optional[str] = Field(default=None)
+
+class SubjectEnum(str, Enum):
+    anime = "anime"
+    manga = "manga"
+
+class TypeAnimeEnum(str, Enum):
+    tv = "tv"
+    movie = "movie"
+    ova = "ova"
+    special = "special"
+    ona = "ona"
+    music = "music"
+    cm = "cm"
+    pv = "pv"
+    tv_special = "tv_special"
+    
+class TypeMangaEnum(str, Enum):
+    manga = "manga"
+    novel = "novel"
+    lightnovel = "lightnovel"
+    oneshot = "oneshot"
+    doujin = "doujin"
+    manhwa = "manhwa"
+    manhua = "manhua"
+
+class OrderByEnum(str, Enum):
+    mal_id = "mal_id"
+    title = "title"
+    start_date = "start_date"
+    end_date = "end_date"
+    episodes = "episodes"
+    score = "score"
+    scored_by = "scored_by"
+    rank = "rank"
+    popularity = "popularity"
+    members= "members"
+    favorites = "favorites"
+
+class StatusEnum(str, Enum):
+    airing = "airing"
+    complete = "complete"
+    upcoming = "upcoming"
+
+
+
+
+
+class LayerOneParameters(BaseModel):
+    subject: SubjectEnum                                            # only manga or anime. Manga includes the types: Manhua, Manhwa, Light Novels, One-shot
+    type: Optional[TypeAnimeEnum] = Field(default=None)
+    order_by: Optional[OrderByEnum] = Field(default=None)
     status: Optional[str] = Field(default=None)             # "airing" or "complete" or "upcoming"
     sfw: Optional[str] = Field(default="true")
 
+
+
+
+
+
+
+
+
+
+# - Comment out the field validators cuz they look messy. Implementing ENUM instead
+"""
     @field_validator("subject")
     @classmethod
     def validate_subject(cls, value):
@@ -73,7 +132,7 @@ class LookingFor(BaseModel):
     
     # Same for the other validators below
 
-    """
+    
     @field_validator("rating")
     @classmethod
     def validate_rating(cls, value):
@@ -100,7 +159,7 @@ class LookingFor(BaseModel):
             schemas_logger.warning(f"Genres Validator: Rejected {value} -> {None}")
             return None
         return value
-    """
+    
 
     @field_validator("status")
     @classmethod
@@ -114,3 +173,5 @@ class LookingFor(BaseModel):
             schemas_logger.warning(f"Status Validator: Rejected {value} -> {None}")
             return None
         return value
+
+"""
