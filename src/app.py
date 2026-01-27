@@ -186,6 +186,6 @@ async def layer_two_handler(services: ServiceProvider) -> dict:
 @app.post("/get_recommendation", status_code=200)
 async def get_recommendation(l1_params: LayerOneParameters, services: ServiceProvider = Depends()) -> dict:
     l1_response = await layer_one_handler(services, l1_params)
-    return l1_response
+    #l2_response = await layer_two_handler(services, )
 
     # l2_response = await layer_two_handler()
