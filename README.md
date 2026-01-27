@@ -1,2 +1,6 @@
 # AniReco
-An anime recommendation application that narrows down to top result/s based on user inputs.
+An anime recommendation backend(for now) that narrows down to top result/s from JikanAPI based on user inputs.
+this project iz to be implemented with:
+- redis caching
+- SqlAlchemy | MySQL
+- prob JWT idkidkdikdidk
