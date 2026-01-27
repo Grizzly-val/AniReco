@@ -1,4 +1,6 @@
+import datetime
 from enum import Enum
+from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel, Field, field_validator
 from typing import Optional
 
@@ -10,28 +12,27 @@ schemas_logger = Logger(logger_name='schemas_logger', log_file='schemas.log').ge
 
 """
     q: Optional[str]                    # Free search
+    sort: Optional[str]                 # "desc" or "asc"
 
+    order_by: Optional[str]             # "mal_id", "title",  "start_date", "end_date", "episodes", "score", "scored_by", "rank", "popularity", "members", "favorites"
 
     min_score: Optional[float]
     max_score: Optional[float]
     genres_exclude: Optional[int]
-    order_by: Optional[str]             # "mal_id", "title",  "start_date", "end_date", "episodes", "score", "scored_by", "rank", "popularity", "members", "favorites"
-    sort: Optional[str]                 # "desc" or "asc"
     producers: Optional[int]
     start_date: Optional[str]           # Format: YYYY-MM-DD
     end_date: Optional[str]             # Format: YYYY-MM-DD
-
     genres: Optional[list[int]] = Field(default=None)
     rating: Optional[str] = Field(default=None)
     
 """
 
-
+#============Layer 1==================
 class SubjectEnum(str, Enum):
     anime = "anime"
     manga = "manga"
 
-class TypeAnimeEnum(str, Enum):
+class AnimeTypeEnum(str, Enum):
     tv = "tv"
     movie = "movie"
     ova = "ova"
@@ -68,16 +69,42 @@ class StatusEnum(str, Enum):
     airing = "airing"
     complete = "complete"
     upcoming = "upcoming"
+#======================================
+class RatingEnum(str, Enum):
+    g = "g"
+    pg = "pg"
+    pg13 = "pg13"
+    r17 = "r17"
+    r = "r"
+    rx = "rx"
 
+
+class LayerTwoParameters(BaseModel):
+    min_score: Optional[float] = Field(default=None)
+    max_score: Optional[float] = Field(default=None)
+    genres_exclude: Optional[int] = Field(default=None)
+    producers: Optional[int] = Field(default=None)
+    start_date: Optional[str] = Field(default=None)           # Format: YYYY-MM-DD
+    end_date: Optional[str] = Field(default=None)             # Format: YYYY-MM-DD
+    genres: Optional[list[int]] = Field(default=None)
+    rating: Optional[RatingEnum] = Field(default=None)
+
+
+    @field_validator("start_date", "end_date")
+    def validate_date(cls, value):
+            try:
+                datetime.date.fromisoformat(value)
+            except ValueError:
+                raise RequestValidationError("Incorrect data format, should be YYYY-MM-DD")
 
 
 
 
 class LayerOneParameters(BaseModel):
     subject: SubjectEnum                                            # only manga or anime. Manga includes the types: Manhua, Manhwa, Light Novels, One-shot
-    type: Optional[TypeAnimeEnum] = Field(default=None)
+    type: Optional[AnimeTypeEnum] = Field(default=None)
     order_by: Optional[OrderByEnum] = Field(default=None)
-    status: Optional[str] = Field(default=None)             # "airing" or "complete" or "upcoming"
+    status: Optional[StatusEnum] = Field(default=None)             # "airing" or "complete" or "upcoming"
     sfw: Optional[str] = Field(default="true")
 
 
