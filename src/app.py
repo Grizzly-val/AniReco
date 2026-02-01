@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException, Depends, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from src.schemas import LayerOneParameters
+from src.schemas import AnimeParams, MangaParams
 
 import asyncio
 import httpx
@@ -91,101 +91,125 @@ async def fetch_jikan(request_url: str, client: httpx.AsyncClient) -> httpx.Resp
         app_logger.info(f"Fetch successful! | HTTPStatus: {response.status_code}")
 
         return response
+    
     except httpx.HTTPStatusError as e:
             app_logger.error(f"Upstream HTTP Error: {e.response.status_code}")
             raise HTTPException(status_code=e.response.status_code, detail="Jikan Server Error",)
     
 
-"""
-========================  TODO : CACHING ========================
-Datas to cache:
-    Request-Level Caching (Reactive Caching): Cache specific requests, including all parameters. Proposed TTL: (5 minutes)
-    Proactive caching: IDK
+
+
+
+async def get_cache_validation(hot_params: dict, request_hotness: int, jikan_response: httpx.Response) -> dict:
+
+    json_data = jikan_response.json()
+    app_logger.info(request_hotness + 1)
+    if request_hotness > 5:
+        return {"layer": "l2", "ttl": 120, "description": "hot_request"}
+  
+
+    data_len = len(json_data["data"])
+
+
+
+    # check if request gives negative data
+    if data_len == 0:
+        return {"layer":"l1", "ttl": 60, "description":"negative_cache"}
 
     
-    --------------------------------DONE ALMOST---------------------------------------
-    Layer 1:
-    > Narrow down to (status, order_by, type, sfw), cache then return
-    -------------------------------NOT DONE----------------------------------------
-    Layer 2:        
-    > Narrow down by filtering constraints
-    -----------------------------------------------------------------------
+    total = 0
+    for hotness in hot_params.values():
+        total += hotness
+    avg = total / len(hot_params)
+    if avg > 10:
+        return {"layer": "l2", "ttl": 150, "description": "hot_params"}
+    
 
-================================================================
-"""
-
+    return {"layer":"l1", "ttl": 60, "description": "regular_cache"}
 
 
 
 
-# TODO (infra/typing):
-# httpx client and Redis are created in the app lifespan and stored on app.state.
-# This works at runtime, but app.state is dynamically typed, so the IDE does not
-# recognize `client` as httpx.AsyncClient or `redis` as Redis.
-#
-# Revisit later:
-# - Decide whether to wrap these in typed dependencies (Request + Depends)
-# - Or define a typed AppState and cast app.state for better autocomplete
-# - Goal: make the codebase *know* these are an HTTP client and a Redis connection,
-#   not just "some object living on app.state"
 
 
 
-async def layer_one_handler(services: ServiceProvider, l1_params: LayerOneParameters) -> dict:
-    client = services.client
+
+async def request_handler(params: AnimeParams | MangaParams, services: ServiceProvider) -> dict:
+
+    # status
+    # order_by
+    # genres
+    # type
+    # rating
+    
     redis = services.redis
 
-    params = l1_params.model_dump(exclude_none=True, exclude={"subject"}, mode="json")
-    query_string = urlencode(params)
-    request_url = f"{JIKAN_URL}/{l1_params.subject.value}?{query_string}" 
+    parsed_params = params.model_dump(mode="json", exclude_none=True)
+    parsed_params = dict(sorted(parsed_params.items()))
 
-
-    l1_cache = await redis.get(request_url)
+    string_params = urlencode(parsed_params)
     
-    ttl = 30
+    request_url = f"{JIKAN_URL}/anime?{string_params}"
 
-    if l1_cache is not None:
-        app_logger.info(f"Cache hit for {request_url}")
-        app_logger.info(f"Fetching from cache\n")
-        # Extend TTL: 'expire' resets the timer without changing the value
-        await redis.expire(request_url, ttl)
-        # Convert bytes from Redis back to a Python Dict
+    hotness_key = f"hot:{request_url}"
+    await redis.incr(name=hotness_key)
+    await redis.expire(hotness_key, 60)
+    temp = await redis.get(name=hotness_key)
+    request_hotness = int(temp)
+
+    cache_priorities = {"status", "order_by", "genres", "type", "rating"}
+    # Create hotness cache for each priority params to track hotness
+
+    # l1_cache : Longer TTL                     [900]
+    # l2_cache : Shorter TTL (still redis)      [120]
+    # Decide cache tier based on query entropy, hotness, and result breadth
+    hot_params = {}
+    for cp in cache_priorities:
+        value_of_priority = parsed_params.get(cp)
+        if value_of_priority is not None:
+            await redis.incr(name=f"anime:{cp}:{value_of_priority}")
+            await redis.expire(f"anime:{cp}:{value_of_priority}", 60)
+            val = await redis.get(f"anime:{cp}:{value_of_priority}")
+            hot_params[f"{cp}:{value_of_priority}"] = int(val)
+        
+    
+    
+    l1_cache = await redis.get(f"l1:{request_url}")
+
+    if l1_cache:
         return json.loads(l1_cache)
+
+    l2_cache = await redis.get(f"l2:{request_url}")
+
+    if l2_cache:
+        return json.loads(l2_cache)
     
     try:
-        app_logger.info(f"Cache miss. Fetching from Jikan...")
-        jikan_response = await fetch_jikan(request_url, client)
-        jikan_response.raise_for_status()
+        jikan_response: httpx.Response = await fetch_jikan(request_url=request_url, client=services.client)
+        cache_status: dict = await get_cache_validation(hot_params, request_hotness, jikan_response)
+        
+        cache_key: str = f"{cache_status["layer"]}:{request_url}"
+        cache_ttl: int = cache_status["ttl"]
+        
+        data_response: dict = jikan_response.json()
 
-        data = jikan_response.json()
-    except HTTPException as httpError:
-        app_logger.warning(f"Caching cancelled: HTTP Status Error Occured")
+        await redis.set(name=cache_key, value=json.dumps(data_response))
+        await redis.expire(name=cache_key, time=cache_ttl)
+        
+        return data_response
+    
+    except HTTPException:
         raise
-    except Exception as e:
-        app_logger.warning(f"Caching cancelled: Unknown Error Occured: {e}")
-        raise HTTPException(status_code=500, detail={"Unknown Error": "unknown"})
-    else:
-        app_logger.info(f"Caching query results\n")
-        json_string = json.dumps(data)
-        await redis.set(name=request_url, value=json_string, ex=ttl)
-
-        return data
-
-
-async def layer_two_handler(services: ServiceProvider) -> dict:
-    ... 
-
-    
+    except httpx.HTTPStatusError:
+        raise
+    # except Exception:
+    #     raise HTTPException(status_code=404, detail="Unknown Error")
+    # General exception removed cuz it gets in the way of debugging
     
 
 
 
-
-
-
-@app.post("/get_recommendation", status_code=200)
-async def get_recommendation(l1_params: LayerOneParameters, services: ServiceProvider = Depends()) -> dict:
-    l1_response = await layer_one_handler(services, l1_params)
-    #l2_response = await layer_two_handler(services, )
-
-    # l2_response = await layer_two_handler()
+@app.post("/get_recommendation/anime", status_code=200)
+async def get_recommendation(params: AnimeParams, services: ServiceProvider = Depends(ServiceProvider)) -> dict:
+    result = request_handler(params=params, services=services)
+    return await result
