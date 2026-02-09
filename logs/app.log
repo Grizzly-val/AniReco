@@ -1,0 +1,104 @@
+2026-02-09 19:48:21,964 INFO HTTP client started
+2026-02-09 19:48:21,964 INFO Redis connection started
+
+2026-02-09 19:49:27,645 INFO Request Received!
+2026-02-09 19:50:09,105 INFO Request Received!
+2026-02-09 19:50:09,111 INFO Genre lookup table not found
+2026-02-09 19:50:10,172 INFO Fetch successful! https://api.jikan.moe/v4/genres/manga | HTTPStatus: 200
+2026-02-09 19:50:10,271 INFO Fetched and cached genre lookup
+2026-02-09 19:50:10,272 INFO String genres converted to int mal_id
+2026-02-09 19:50:10,273 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [1] request counter cached
+2026-02-09 19:50:10,274 INFO param_hotness|anime|order_by:popularity - [1] cached!
+2026-02-09 19:50:10,275 INFO param_hotness|anime|genres:1,5 - [1] cached!
+2026-02-09 19:50:10,275 INFO param_hotness|anime|type:tv - [1] cached!
+2026-02-09 19:50:10,276 INFO l1 cache miss
+2026-02-09 19:50:10,276 INFO l2 cache miss
+2026-02-09 19:50:10,611 INFO Fetch successful! https://api.jikan.moe/v4/anime?type=tv&order_by=popularity&sfw=true&genres=1%2C5 | HTTPStatus: 200
+2026-02-09 19:50:10,611 INFO Returning cache for REGULAR CACHE
+2026-02-09 19:50:10,613 INFO Cached! || key: (l2:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (60)
+2026-02-09 19:50:10,613 INFO Request Handled! (1.507856s)
+
+2026-02-09 19:50:17,672 INFO Request Received!
+2026-02-09 19:50:17,674 INFO String genres converted to int mal_id
+2026-02-09 19:50:17,675 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [2] request counter cached
+2026-02-09 19:50:17,675 INFO param_hotness|anime|order_by:popularity - [2] cached!
+2026-02-09 19:50:17,682 INFO param_hotness|anime|genres:1,5 - [2] cached!
+2026-02-09 19:50:17,686 INFO param_hotness|anime|type:tv - [2] cached!
+2026-02-09 19:50:17,687 INFO l1 cache miss
+2026-02-09 19:50:17,688 INFO l2 cache hit!
+2026-02-09 19:50:17,688 INFO Returning cache for REGULAR CACHE
+2026-02-09 19:50:17,690 INFO Cached! || key: (l2:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (60)
+2026-02-09 19:50:17,691 INFO Request Handled! (0.018944s)
+
+2026-02-09 19:50:22,316 INFO Request Received!
+2026-02-09 19:50:22,320 INFO String genres converted to int mal_id
+2026-02-09 19:50:22,322 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [3] request counter cached
+2026-02-09 19:50:22,325 INFO param_hotness|anime|order_by:popularity - [3] cached!
+2026-02-09 19:50:22,328 INFO param_hotness|anime|genres:1,5 - [3] cached!
+2026-02-09 19:50:22,331 INFO param_hotness|anime|type:tv - [3] cached!
+2026-02-09 19:50:22,332 INFO l1 cache miss
+2026-02-09 19:50:22,333 INFO l2 cache hit!
+2026-02-09 19:50:22,333 INFO Returning cache for REGULAR CACHE
+2026-02-09 19:50:22,335 INFO Cached! || key: (l2:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (60)
+2026-02-09 19:50:22,335 INFO Request Handled! (0.017706s)
+
+2026-02-09 19:50:25,311 INFO Request Received!
+2026-02-09 19:50:25,313 INFO String genres converted to int mal_id
+2026-02-09 19:50:25,316 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [4] request counter cached
+2026-02-09 19:50:25,318 INFO param_hotness|anime|order_by:popularity - [4] cached!
+2026-02-09 19:50:25,321 INFO param_hotness|anime|genres:1,5 - [4] cached!
+2026-02-09 19:50:25,325 INFO param_hotness|anime|type:tv - [4] cached!
+2026-02-09 19:50:25,325 INFO l1 cache miss
+2026-02-09 19:50:25,326 INFO l2 cache hit!
+2026-02-09 19:50:25,326 INFO Returning cache for REGULAR CACHE
+2026-02-09 19:50:25,328 INFO Cached! || key: (l2:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (60)
+2026-02-09 19:50:25,328 INFO Request Handled! (0.017017s)
+
+2026-02-09 19:50:30,809 INFO Request Received!
+2026-02-09 19:50:30,811 INFO String genres converted to int mal_id
+2026-02-09 19:50:30,813 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [5] request counter cached
+2026-02-09 19:50:30,814 INFO param_hotness|anime|order_by:popularity - [5] cached!
+2026-02-09 19:50:30,816 INFO param_hotness|anime|genres:1,5 - [5] cached!
+2026-02-09 19:50:30,818 INFO param_hotness|anime|type:tv - [5] cached!
+2026-02-09 19:50:30,818 INFO l1 cache miss
+2026-02-09 19:50:30,818 INFO l2 cache hit!
+2026-02-09 19:50:30,820 INFO Returning cache for REGULAR CACHE
+2026-02-09 19:50:30,820 INFO Cached! || key: (l2:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (60)
+2026-02-09 19:50:30,820 INFO Request Handled! (0.010579s)
+
+2026-02-09 19:50:33,562 INFO Request Received!
+2026-02-09 19:50:33,564 INFO String genres converted to int mal_id
+2026-02-09 19:50:33,570 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [6] request counter cached
+2026-02-09 19:50:33,572 INFO param_hotness|anime|order_by:popularity - [6] cached!
+2026-02-09 19:50:33,576 INFO param_hotness|anime|genres:1,5 - [6] cached!
+2026-02-09 19:50:33,582 INFO param_hotness|anime|type:tv - [6] cached!
+2026-02-09 19:50:33,584 INFO l1 cache miss
+2026-02-09 19:50:33,586 INFO l2 cache hit!
+2026-02-09 19:50:33,586 INFO Returning cache for HOT REQUEST
+2026-02-09 19:50:33,587 INFO Cached! || key: (l1:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (120)
+2026-02-09 19:50:33,588 INFO Request Handled! (0.026199s)
+
+2026-02-09 19:50:38,081 INFO Request Received!
+2026-02-09 19:50:38,083 INFO String genres converted to int mal_id
+2026-02-09 19:50:38,087 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [7] request counter cached
+2026-02-09 19:50:38,090 INFO param_hotness|anime|order_by:popularity - [7] cached!
+2026-02-09 19:50:38,092 INFO param_hotness|anime|genres:1,5 - [7] cached!
+2026-02-09 19:50:38,095 INFO param_hotness|anime|type:tv - [7] cached!
+2026-02-09 19:50:38,096 INFO l1 cache hit!
+2026-02-09 19:50:38,097 INFO Returning cache for HOT REQUEST
+2026-02-09 19:50:38,098 INFO Cached! || key: (l1:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (120)
+2026-02-09 19:50:38,099 INFO Request Handled! (0.017156s)
+
+2026-02-09 19:50:41,701 INFO Request Received!
+2026-02-09 19:50:41,704 INFO String genres converted to int mal_id
+2026-02-09 19:50:41,706 INFO hot_request|type:tv|order_by:popularity|sfw:true|genres:1,5| - [8] request counter cached
+2026-02-09 19:50:41,709 INFO param_hotness|anime|order_by:popularity - [8] cached!
+2026-02-09 19:50:41,712 INFO param_hotness|anime|genres:1,5 - [8] cached!
+2026-02-09 19:50:41,715 INFO param_hotness|anime|type:tv - [8] cached!
+2026-02-09 19:50:41,716 INFO l1 cache hit!
+2026-02-09 19:50:41,716 INFO Returning cache for HOT REQUEST
+2026-02-09 19:50:41,718 INFO Cached! || key: (l1:type:tv|order_by:popularity|sfw:true|genres:1,5|) | ttl: (120)
+2026-02-09 19:50:41,719 INFO Request Handled! (0.017548s)
+
+2026-02-09 19:50:54,452 INFO Redis connection closed
+2026-02-09 19:50:54,452 INFO HTTP client closed
