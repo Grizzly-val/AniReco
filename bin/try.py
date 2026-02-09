@@ -1,20 +1,67 @@
-import json
+from fastapi import FastAPI
+import httpx
+import uvicorn
 
-# Open the JSON file in read mode ('r') using a 'with' statement
-try:
-    with open('sample.json', 'r') as file:
-        # Use json.load() to deserialize the file data into a Python object
-        data = json.load(file)
+app = FastAPI()
 
-    # The 'data' variable is now a Python dictionary (based on the JSON structure)
-    print("Successfully imported JSON data:")
-    print(f"Data type: {type(data)}")
+item: int = 3
+page: int = 1
 
-    # Access specific elements using dictionary keys or list indices
-    print(f"\nAccessing specific data:")
-    print(f"Size: {len(data["data"])}")
 
-except FileNotFoundError:
-    print("Error: The file 'data.json' was not found.")
-except json.JSONDecodeError:
-    print("Error: Failed to decode JSON from the file. Check for malformed JSON data.")
+@app.get("/top")
+def top():
+    with httpx.Client() as client:
+        response = client.get(f"https://api.jikan.moe/v4/seasons/now?page={page}").json()
+
+        print("="*70)
+        for i in range(len(response["data"])):
+            print(f"SeasonNow: {response["data"][i]["title"]}")
+        print("="*70)
+
+        return response["data"][item]["title"]
+
+
+@app.get("/anime")
+def anime():
+    with httpx.Client() as client:
+        response = client.get(f"https://api.jikan.moe/v4/anime?status=airing&order_by=scored_by&sort=desc&page={page}").json()
+
+        print("="*70)
+        for i in range(len(response["data"])):
+            print(f"StatusAiring: {response["data"][i]["title"]}")
+        print("="*70)
+
+        return response["data"][item]["title"]
+    
+
+
+@app.get("/test")
+def test():
+    with httpx.Client() as client:
+        response = client.get(f"https://api.jikan.moe/v4/anime?q=pro gamer&order_by=popularity&page={page}").json()
+
+        print("="*70)
+        for i in range(len(response["data"])):
+            print(f"TestReqs: {response["data"][i]["title"]}")
+        print("="*70)
+
+        return response["data"][item]["title"]
+    
+
+if __name__ == "__main__":
+    uvicorn.run(app="try:app", host="localhost", port=8000, reload=True)
+
+
+
+
+"""
+Conclusions (Comparisons):
+
+No Params                                   |          Using Params
+======================================================================================================
+https://api.jikan.moe/v4/top/anime          |   https://api.jikan.moe/v4/anime?order_by=score&sort=desc
+https://api.jikan.moe/v4/seasons/now        |   https://api.jikan.moe/v4/anime?status=airing&order_by=scored_by&sort=desc
+
+
+"""
+        
