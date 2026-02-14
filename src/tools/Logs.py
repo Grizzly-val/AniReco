@@ -3,7 +3,7 @@ import os
 
 from pathlib import Path
 
-
+"""TODO: Practice asynchronous logging"""
 
 class Logger:
     def __init__(self, logger_name, log_file, level=logging.INFO):
